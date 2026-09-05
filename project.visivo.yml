@@ -1,3 +1,4 @@
+name: nyc-cuisines
 sources:
   - name: nyc-db
     type: duckdb
