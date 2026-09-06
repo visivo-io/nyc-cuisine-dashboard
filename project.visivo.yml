@@ -89,3 +89,10 @@ dashboards:
       - height: large
         items:
           - chart: ${ref(cuisine-map)}
+markdowns:
+  - name: new-markdown
+    align: left
+    content: |-
+      # New markdown
+      test
+    justify: start
