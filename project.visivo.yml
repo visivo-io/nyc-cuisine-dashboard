@@ -2,25 +2,39 @@ name: nyc-cuisines
 sources:
   - name: nyc-db
     type: duckdb
-    database: nyc_food.duckdb
+    database: ":memory:"
+    attach:
+      - schema_name: remote
+        source:
+          name: nyc_remote
+          type: duckdb
+          database: https://github.com/visivo-io/nyc-cuisine-dashboard/raw/refs/heads/main/nyc_food.duckdb
 
 defaults:
   source_name: nyc-db
 
 models:
   - name: restaurants
-    sql: SELECT * FROM restaurants_with_station
+    # Named rather than `SELECT *`: the attached catalog's schema does not
+    # reach the planner, so a star cannot be expanded into real columns.
+    sql: >
+      SELECT restaurant_name, address, borough, postcode, latitude, longitude,
+             cuisine, station_name, station_lat, station_lon, station_routes
+      FROM remote.restaurants_with_station
 
   - name: station-counts
     sql: >
-      SELECT * FROM (
-        SELECT *,
-          ROW_NUMBER() OVER (PARTITION BY cuisine ORDER BY restaurant_count DESC) AS rank
-        FROM station_cuisine_counts
+      SELECT station_name, station_lat, station_lon, station_routes, cuisine,
+             restaurant_count, rank
+      FROM (
+        SELECT station_name, station_lat, station_lon, station_routes, cuisine,
+               restaurant_count,
+               ROW_NUMBER() OVER (PARTITION BY cuisine ORDER BY restaurant_count DESC) AS rank
+        FROM remote.station_cuisine_counts
       ) WHERE rank <= 3
 
   - name: cuisine-list
-    sql: SELECT DISTINCT cuisine FROM restaurants_with_station ORDER BY cuisine
+    sql: SELECT DISTINCT rws.cuisine FROM remote.restaurants_with_station as rws ORDER BY cuisine
 
 inputs:
   - name: cuisine-select
