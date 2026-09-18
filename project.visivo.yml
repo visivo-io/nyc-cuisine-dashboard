@@ -17,11 +17,12 @@ models:
   - name: restaurants
     # Named rather than `SELECT *`: the attached catalog's schema does not
     # reach the planner, so a star cannot be expanded into real columns.
-    sql: >
+    sql: |-
       SELECT restaurant_name, address, borough, postcode, latitude, longitude,
              cuisine, station_name, station_lat, station_lon, station_routes
       FROM remote.restaurants_with_station
 
+    source: ${ref(nyc-db)}
   - name: station-counts
     sql: >
       SELECT station_name, station_lat, station_lon, station_routes, cuisine,
@@ -38,12 +39,9 @@ models:
 
 inputs:
   - name: cuisine-select
-    label: "Select Cuisine"
+    label: "Select Cuisines"
     type: single-select
     options: ?{SELECT cuisine FROM ${ref(cuisine-list)}}
-    display:
-      type: dropdown
-
 insights:
   - name: restaurant-markers
     props:
