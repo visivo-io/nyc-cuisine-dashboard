@@ -39,7 +39,7 @@ models:
 
 inputs:
   - name: cuisine-select
-    label: "Select Cuisinessss"
+    label: "Select Cuisine"
     type: single-select
     options: ?{SELECT cuisine FROM ${ref(cuisine-list)}}
 insights:
